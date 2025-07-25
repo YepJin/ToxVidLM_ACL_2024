@@ -1,7 +1,7 @@
 ## Yjin's implementation
-
+```bash
 git clone https://github.com/YepJin/ToxVidLLM_ACL_2024.git
-
+```
 ## Paper Link
 Please find our paper at [https://aclanthology.org/2024.findings-acl.663/](https://aclanthology.org/2024.findings-acl.663/)
 

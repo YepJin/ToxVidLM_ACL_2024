@@ -38,7 +38,7 @@ for k, v in tasks_bool.items():
         
 config = Namespace(
     file_name=name + "0",
-    device=torch.device("cuda:1"),
+    device=torch.device("cuda:0"),
     tokenizer_path="ckpts",
     tasks = tasks,
     offensive_bool = tasks_bool["offensive"],
@@ -81,9 +81,9 @@ df = pd.read_csv("final_data/final_processed_data_one_hot.csv")
 df_train_val, df_test = train_test_split(df, test_size=0.1, random_state=28703)
 df_train, df_val = train_test_split(df_train_val, test_size=0.1, random_state=28703)
 
-num_epochs = 30
+num_epochs = 2
 patience = 10
-batch_size = 2
+batch_size = 1
 
 #for roberta
 tokenizer = XLMRobertaTokenizerFast.from_pretrained("l3cube-pune/hing-roberta")
@@ -97,6 +97,27 @@ model = XLMRobertaModel.from_pretrained("l3cube-pune/hing-roberta", torch_dtype=
 
 
 model = Multimodal_LLM(batch_size=batch_size, config=config, tokenizer=tokenizer, adapter_llm=model)
+
+
+# Use DataParallel to utilize all GPUs
+'''
+if torch.cuda.device_count() > 1:
+    print(f"Using {torch.cuda.device_count()} GPUs")
+    model = torch.nn.DataParallel(model)
+    batch_size = batch_size * torch.cuda.device_count()  # Scale batch size
+    print(f"Effective batch size: {batch_size}")
+
+model = model.to(config.device)
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:256'
+import gc
+if torch.cuda.is_available():
+    torch.cuda.empty_cache()
+    gc.collect()
+    print("GPU memory cleared")
+'''
+# End Debug
 
 train_ds = CustomDataset(dataframe=df_train, train=True, tokenizer=tokenizer)
 val_ds = CustomDataset(df_val, train=True, tokenizer=tokenizer)

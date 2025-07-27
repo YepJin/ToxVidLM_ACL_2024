@@ -70,7 +70,7 @@ class Multimodal_LLM(nn.Module):
         
     def forward(self, inputs):
         
-        batch_size = inputs["image"].shape[0]
+        batch_size = inputs["video"].shape[0]
         
         #ids
         bos = torch.ones([batch_size, 1], dtype=torch.int64, device=self.config.device) * self.tokenizer.bos_token_id

@@ -103,9 +103,9 @@ train_ds = CustomDataset(dataframe=df_train, train=True, tokenizer=tokenizer)
 val_ds = CustomDataset(df_val, train=True, tokenizer=tokenizer)
 test_ds = CustomDataset(df_test, train=False, tokenizer=tokenizer)
 
-train_dataloader = DataLoader(train_ds, batch_size=batch_size, num_workers=16, shuffle=True)
-val_dataloader = DataLoader(val_ds, batch_size=batch_size, num_workers=16)
-test_dataloader = DataLoader(test_ds, batch_size=batch_size, num_workers=16)
+train_dataloader = DataLoader(train_ds, batch_size=batch_size, num_workers=0, shuffle=True)
+val_dataloader = DataLoader(val_ds, batch_size=batch_size, num_workers=0)
+test_dataloader = DataLoader(test_ds, batch_size=batch_size, num_workers=0)
 
 checkpoint_path = "checkpoints/model_save.pth"
 

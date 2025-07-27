@@ -10,7 +10,7 @@ Please find our paper at [https://aclanthology.org/2024.findings-acl.663/](https
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/justaguyalways/ToxVidLLM_ACL_2024.git
+
 cd ToxVidLLM_ACL_2024
 ```
 

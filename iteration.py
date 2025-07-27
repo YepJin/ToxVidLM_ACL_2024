@@ -5,6 +5,7 @@ from transformers import AdamW, get_linear_schedule_with_warmup
 from tqdm import tqdm
 import json
 from sklearn.metrics import accuracy_score, f1_score, classification_report
+import os
 
 def train_one_epoch(model, train_dataloader, optimizer, config, devices=None):
     model = model.to(config.device)
@@ -102,15 +103,20 @@ def train_model(model, train_dataloader, val_dataloader, config, num_epochs, tra
         json_save_path = config.results_directory + config.file_name + ".json"
 
         # Save to JSON file
+        os.makedirs(config.results_directory, exist_ok=True)
+        
         with open(json_save_path, 'w') as json_file:
             json.dump(history, json_file)
         
         
         if val_metrics[track_task][track_metric] > best_val_metric:
             best_val_metric = val_metrics[track_task][track_metric]
-            # torch.save(model.state_dict(), config.directory + config.file_name + ".pth")
+            torch.save(model.state_dict(), config.directory + config.file_name + ".pth")
 
-    
+    print("saved best model with metric: ", track_metric, " for task: ", track_task)
+
+    torch.save(model.state_dict(), config.directory + config.file_name + ".pth")
+
     print("Training finished!")
 
 

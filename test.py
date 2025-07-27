@@ -38,7 +38,7 @@ for k, v in tasks_bool.items():
         
 config = Namespace(
     file_name=name + "0",
-    device=torch.device("cuda:1"),
+    device=torch.device("cuda:0"),
     tokenizer_path="ckpts",
     tasks = tasks,
     offensive_bool = tasks_bool["offensive"],
@@ -103,11 +103,11 @@ train_ds = CustomDataset(dataframe=df_train, train=True, tokenizer=tokenizer)
 val_ds = CustomDataset(df_val, train=True, tokenizer=tokenizer)
 test_ds = CustomDataset(df_test, train=False, tokenizer=tokenizer)
 
-train_dataloader = DataLoader(train_ds, batch_size=batch_size, num_workers=0, shuffle=True)
-val_dataloader = DataLoader(val_ds, batch_size=batch_size, num_workers=0)
-test_dataloader = DataLoader(test_ds, batch_size=batch_size, num_workers=0)
+train_dataloader = DataLoader(train_ds, batch_size=batch_size, num_workers=8, shuffle=True)
+val_dataloader = DataLoader(val_ds, batch_size=batch_size, num_workers=8)
+test_dataloader = DataLoader(test_ds, batch_size=batch_size, num_workers=8)
 
-checkpoint_path = "checkpoints/model_save.pth"
+checkpoint_path = config.directory + config.file_name + ".pth"
 
 state_dict = torch.load(checkpoint_path, map_location=config.device)
 model.load_state_dict(state_dict)

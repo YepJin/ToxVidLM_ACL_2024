@@ -83,7 +83,7 @@ df_train, df_val = train_test_split(df_train_val, test_size=0.4, random_state=28
 
 num_epochs = 1
 patience = 10
-batch_size = 4
+batch_size = 2
 
 #for roberta
 tokenizer = XLMRobertaTokenizerFast.from_pretrained("l3cube-pune/hing-roberta")

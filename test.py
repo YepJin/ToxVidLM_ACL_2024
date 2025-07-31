@@ -27,7 +27,7 @@ import warnings
 warnings.filterwarnings('ignore')
 import os
 
-tasks_bool = {"offensive" : True, "offensive_level": True, "sentiment" : True}
+tasks_bool = {"offensive" : False, "offensive_level": False, "sentiment" : True}
 tasks = []
 name = "gpt2_vidmae_whisper_"
 
@@ -78,12 +78,16 @@ config = Namespace(
 )
 
 df = pd.read_csv("final_data/final_processed_data_one_hot.csv")
+
+df = pd.read_csv("final_data/final_processed_data_one_hot_5_levels.csv")
+
+df=df.head(100)
 df_train_val, df_test = train_test_split(df, test_size=0.1, random_state=28703)
 df_train, df_val = train_test_split(df_train_val, test_size=0.1, random_state=28703)
 
-num_epochs = 30
+num_epochs = 1
 patience = 10
-batch_size = 2
+batch_size = 4
 
 #for roberta
 tokenizer = XLMRobertaTokenizerFast.from_pretrained("l3cube-pune/hing-roberta")
@@ -110,6 +114,7 @@ test_dataloader = DataLoader(test_ds, batch_size=batch_size, num_workers=8)
 checkpoint_path = config.directory + config.file_name + ".pth"
 
 state_dict = torch.load(checkpoint_path, map_location=config.device)
+print("load state dict",checkpoint_path)
 model.load_state_dict(state_dict)
 
 validate(model, test_dataloader, config)

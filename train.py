@@ -78,6 +78,7 @@ config = Namespace(
 )
 
 df = pd.read_csv("final_data/final_processed_data_one_hot.csv")
+df = pd.read_csv("final_data/final_processed_data_one_hot_5_levels.csv")
 df=df.head(100)
 df_train_val, df_test = train_test_split(df, test_size=0.4, random_state=28703)
 df_train, df_val = train_test_split(df_train_val, test_size=0.4, random_state=28703)

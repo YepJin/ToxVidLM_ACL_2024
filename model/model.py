@@ -62,7 +62,7 @@ class Multimodal_LLM(nn.Module):
         
         self.offensive_head = FC_head(num_classes=2, hidden_dim=64, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
         self.offensive_levels_head = FC_head(num_classes=3, hidden_dim=128, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
-        self.sentiment_head = FC_head(num_classes=3, hidden_dim=128, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
+        self.sentiment_head = FC_head(num_classes=5, hidden_dim=128, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
     
         self.criterion_offensive = nn.CrossEntropyLoss()
         self.criterion_offensive_level = nn.CrossEntropyLoss()

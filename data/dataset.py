@@ -59,6 +59,10 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         
         dialogue = self.dataframe["text"].iloc[idx] #change column name in dataframe
+        # Handle empty/NaN text values by replacing with empty string
+        if pd.isna(dialogue) or dialogue == "" or dialogue == " ":
+            dialogue = "No text available"
+        
         offensive_labels = torch.tensor(literal_eval(self.dataframe["offensive"].iloc[idx]), device="cpu")
         offensive_level_labels = torch.tensor(literal_eval(self.dataframe["offensiveness level"].iloc[idx]), device="cpu")
         sentiment_labels = torch.tensor(literal_eval(self.dataframe["sentiment"].iloc[idx]), device="cpu")

@@ -77,11 +77,11 @@ config = Namespace(
     results_directory = "results/"
 )
 
-
 df = pd.read_csv("tiktok_data/video_rating.csv")
+
 df=df.head(100)
-df_train_val, df_test = train_test_split(df, test_size=0.4, random_state=28703)
-df_train, df_val = train_test_split(df_train_val, test_size=0.4, random_state=28703)
+df_train_val, df_test = train_test_split(df, test_size=0.1, random_state=28703)
+df_train, df_val = train_test_split(df_train_val, test_size=0.1, random_state=28703)
 
 num_epochs = 1
 patience = 10
@@ -92,6 +92,7 @@ tokenizer = XLMRobertaTokenizerFast.from_pretrained("l3cube-pune/hing-roberta")
 model = XLMRobertaModel.from_pretrained("l3cube-pune/hing-roberta", torch_dtype=torch.float32)
 
 #for gpt2
+
 # tokenizer = PreTrainedTokenizerFast.from_pretrained('l3cube-pune/hing-gpt')
 # model = GPT2Model.from_pretrained('l3cube-pune/hing-gpt', torch_dtype=torch.float32)
 # tokenizer.bos_token_id = 1
@@ -99,9 +100,6 @@ model = XLMRobertaModel.from_pretrained("l3cube-pune/hing-roberta", torch_dtype=
 
 
 model = Multimodal_LLM(batch_size=batch_size, config=config, tokenizer=tokenizer, adapter_llm=model)
-
-
-
 
 train_ds = CustomDataset(dataframe=df_train, train=True, tokenizer=tokenizer)
 val_ds = CustomDataset(df_val, train=True, tokenizer=tokenizer)
@@ -111,5 +109,10 @@ train_dataloader = DataLoader(train_ds, batch_size=batch_size, num_workers=8, sh
 val_dataloader = DataLoader(val_ds, batch_size=batch_size, num_workers=8)
 test_dataloader = DataLoader(test_ds, batch_size=batch_size, num_workers=8)
 
+checkpoint_path = config.directory + config.file_name + ".pth"
 
-train_model(model, train_dataloader, val_dataloader, config, num_epochs, "sentiment", "f1", devices=None)
+state_dict = torch.load(checkpoint_path, map_location=config.device)
+print("load state dict",checkpoint_path)
+model.load_state_dict(state_dict)
+
+validate(model, test_dataloader, config)

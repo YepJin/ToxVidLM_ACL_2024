@@ -26,15 +26,31 @@ from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
 import os
+import argparse
+import json
+from sklearn.metrics import mean_absolute_error, confusion_matrix
+import numpy as np
+
+# Add command line argument parsing
+parser = argparse.ArgumentParser(description='Test TikTok sentiment analysis model')
+parser.add_argument('--rd_state', type=int, default=123, help='Random state for train/test split (default: 123)')
+parser.add_argument('--save_predictions', action='store_true', help='Save detailed prediction results')
+args = parser.parse_args()
 
 tasks_bool = {"offensive" : False, "offensive_level": False, "sentiment" : True}
 tasks = []
 name = "gpt2_vidmae_whisper_"
 
+rd_state = args.rd_state
+print(f"Using random state: {rd_state}")
+
 for k, v in tasks_bool.items():
     if tasks_bool[k]:
         tasks.append(k)
         name += k + "_"
+
+# Add random state to filename to load the correct model
+name += f"rd{rd_state}_"
         
 config = Namespace(
     file_name=name + "0",
@@ -79,11 +95,11 @@ config = Namespace(
 
 df = pd.read_csv("tiktok_data/video_rating.csv")
 
-df=df.head(100)
-df_train_val, df_test = train_test_split(df, test_size=2/3, random_state=123)
-df_train, df_val = train_test_split(df_train_val, test_size=2/3, random_state=123)
 
-num_epochs = 4
+df_train_val, df_test = train_test_split(df, test_size=2/3, random_state=rd_state)
+df_train, df_val = train_test_split(df_train_val, test_size=2/3, random_state=rd_state)
+
+num_epochs = 3
 patience = 10
 batch_size = 4
 
@@ -115,4 +131,82 @@ state_dict = torch.load(checkpoint_path, map_location=config.device)
 print("load state dict",checkpoint_path)
 model.load_state_dict(state_dict)
 
-validate(model, test_dataloader, config)
+# Get detailed test results
+test_metrics, all_labels, all_predictions = validate(model, test_dataloader, config)
+
+# Calculate additional metrics and save detailed results if requested
+if args.save_predictions:
+    detailed_results = {
+        "random_state": rd_state,
+        "model_file": config.file_name,
+        "test_metrics": test_metrics,
+        "detailed_analysis": {}
+    }
+    
+    for task in config.tasks:
+        labels = np.array(all_labels[task])
+        predictions = np.array(all_predictions[task])
+        
+        # Calculate MAE
+        mae = mean_absolute_error(labels, predictions)
+        
+        # Calculate confusion matrix
+        cm = confusion_matrix(labels, predictions)
+        
+        # Calculate per-class accuracy
+        per_class_accuracy = cm.diagonal() / cm.sum(axis=1)
+        
+        # Count correct predictions per class
+        unique_labels = np.unique(labels)
+        correct_per_class = {}
+        total_per_class = {}
+        
+        for label in unique_labels:
+            mask = labels == label
+            correct_per_class[int(label)] = int(np.sum(predictions[mask] == label))
+            total_per_class[int(label)] = int(np.sum(mask))
+        
+        detailed_results["detailed_analysis"][task] = {
+            "mae": float(mae),
+            "confusion_matrix": cm.tolist(),
+            "per_class_accuracy": per_class_accuracy.tolist(),
+            "correct_per_class": correct_per_class,
+            "total_per_class": total_per_class,
+            "predictions": predictions.tolist(),
+            "true_labels": labels.tolist()
+        }
+    
+    # Save results
+    results_filename = f"results/test_results_rd{rd_state}.json"
+    with open(results_filename, 'w') as f:
+        json.dump(detailed_results, f, indent=2)
+    
+    print(f"\n📊 DETAILED RESULTS SAVED TO: {results_filename}")
+    print("="*60)
+    
+    for task in config.tasks:
+        print(f"\n🎯 {task.upper()} TASK RESULTS:")
+        print(f"   • Accuracy: {test_metrics[task]['accuracy']:.4f}")
+        print(f"   • F1-Score: {test_metrics[task]['f1']:.4f}")
+        print(f"   • MAE: {detailed_results['detailed_analysis'][task]['mae']:.4f}")
+        
+        print(f"   • Per-class results:")
+        for label, correct in detailed_results['detailed_analysis'][task]['correct_per_class'].items():
+            total = detailed_results['detailed_analysis'][task]['total_per_class'][label]
+            acc = correct / total if total > 0 else 0
+            print(f"     - Class {label}: {correct}/{total} correct ({acc:.2%})")
+        
+        print(f"\n   • Confusion Matrix:")
+        cm = np.array(detailed_results['detailed_analysis'][task]['confusion_matrix'])
+        print("     True\\Pred", end="")
+        for i in range(cm.shape[1]):
+            print(f"{i:6}", end="")
+        print()
+        for i, row in enumerate(cm):
+            print(f"     Class {i}:", end="")
+            for val in row:
+                print(f"{val:6}", end="")
+            print()
+
+else:
+    print("\nRun with --save_predictions to save detailed results")

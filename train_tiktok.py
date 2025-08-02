@@ -26,15 +26,27 @@ from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
 import os
+import argparse
+
+# Add command line argument parsing
+parser = argparse.ArgumentParser(description='Train TikTok sentiment analysis model')
+parser.add_argument('--rd_state', type=int, default=123, help='Random state for train/test split (default: 123)')
+args = parser.parse_args()
 
 tasks_bool = {"offensive" : False, "offensive_level": False, "sentiment" : True}
 tasks = []
 name = "gpt2_vidmae_whisper_"
 
+rd_state = args.rd_state
+print(f"Using random state: {rd_state}")
+
 for k, v in tasks_bool.items():
     if tasks_bool[k]:
         tasks.append(k)
         name += k + "_"
+
+# Add random state to filename to distinguish different splits
+name += f"rd{rd_state}_"
         
 config = Namespace(
     file_name=name + "0",
@@ -80,10 +92,10 @@ config = Namespace(
 
 df = pd.read_csv("tiktok_data/video_rating.csv")
 #df=df.head(100)
-df_train_val, df_test = train_test_split(df, test_size=(2/3), random_state=123)
-df_train, df_val = train_test_split(df_train_val, test_size=(2/3), random_state=123)
+df_train_val, df_test = train_test_split(df, test_size=(2/3), random_state=rd_state)
+df_train, df_val = train_test_split(df_train_val, test_size=(2/3), random_state=rd_state)
 
-num_epochs = 4
+num_epochs = 3
 patience = 10
 batch_size = 4
 

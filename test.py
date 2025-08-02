@@ -85,7 +85,7 @@ df=df.head(100)
 df_train_val, df_test = train_test_split(df, test_size=0.1, random_state=28703)
 df_train, df_val = train_test_split(df_train_val, test_size=0.1, random_state=28703)
 
-num_epochs = 1
+num_epochs = 3
 patience = 10
 batch_size = 4
 

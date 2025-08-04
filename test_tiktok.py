@@ -37,12 +37,12 @@ parser.add_argument('--rd_state', type=int, default=123, help='Random state for 
 parser.add_argument('--save_predictions', action='store_true', help='Save detailed prediction results')
 args = parser.parse_args()
 
-tasks_bool = {"engagement" : True, "offensive_level": False, "sentiment" : False}
+tasks_bool = {"engagement" : False, "offensive_level": False, "sentiment" : True}
 tasks = []
 name = "gpt2_vidmae_whisper_"
 
 rd_state = args.rd_state
-print(f"Using random state: {rd_state}")
+#print(f"Using random state: {rd_state}")
 
 for k, v in tasks_bool.items():
     if tasks_bool[k]:

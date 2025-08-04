@@ -33,7 +33,7 @@ parser = argparse.ArgumentParser(description='Train TikTok sentiment analysis mo
 parser.add_argument('--rd_state', type=int, default=123, help='Random state for train/test split (default: 123)')
 args = parser.parse_args()
 
-tasks_bool = {"engagement" : True, "offensive_level": False, "sentiment" : False}
+tasks_bool = {"engagement" : False, "offensive_level": False, "sentiment" : True}
 tasks = []
 name = "gpt2_vidmae_whisper_"
 
@@ -95,7 +95,7 @@ df = pd.read_csv("video_rating.csv")
 df_train_val, df_test = train_test_split(df, test_size=(2/3), random_state=rd_state)
 df_train, df_val = train_test_split(df_train_val, test_size=(2/3), random_state=rd_state)
 
-num_epochs = 2
+num_epochs = 4
 patience = 10
 batch_size = 4
 
@@ -120,4 +120,4 @@ val_dataloader = DataLoader(val_ds, batch_size=batch_size, num_workers=8)
 test_dataloader = DataLoader(test_ds, batch_size=batch_size, num_workers=8)
 
 
-train_model(model, train_dataloader, val_dataloader, config, num_epochs, "engagement", "f1", devices=None)
+train_model(model, train_dataloader, val_dataloader, config, num_epochs, "sentiment", "f1", devices=None)

@@ -74,7 +74,7 @@ def train_model(model, train_dataloader, val_dataloader, config, num_epochs, tra
     model = model.to(config.device)
     history = {"train_validation": []}
     
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-7)
     
     best_val_metric = 0.0
 

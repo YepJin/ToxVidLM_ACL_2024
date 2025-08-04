@@ -63,7 +63,7 @@ class CustomDataset(Dataset):
         if pd.isna(dialogue) or dialogue == "" or dialogue == " ":
             dialogue = "No text available"
         
-        offensive_labels = torch.tensor(literal_eval(self.dataframe["offensive"].iloc[idx]), device="cpu")
+        engagement_labels = torch.tensor(literal_eval(self.dataframe["engagement_one_hot"].iloc[idx]), device="cpu")
         offensive_level_labels = torch.tensor(literal_eval(self.dataframe["offensiveness level"].iloc[idx]), device="cpu")
         sentiment_labels = torch.tensor(literal_eval(self.dataframe["sentiment"].iloc[idx]), device="cpu")
         
@@ -77,7 +77,7 @@ class CustomDataset(Dataset):
 
         sample = {
             'dialogue' : dialogue,
-            'offensive' : offensive_labels,
+            'engagement' : engagement_labels,
             'offensive_level' : offensive_level_labels,
             'sentiment' : sentiment_labels,
             'video': video,

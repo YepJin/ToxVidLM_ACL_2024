@@ -60,11 +60,11 @@ class Multimodal_LLM(nn.Module):
       
         self.gate_fusion = Gate_Attention(num_hidden_a = self.config.llm_embed_dim, num_hidden_b = self.config.llm_embed_dim, num_hidden = self.config.llm_embed_dim)
         
-        self.offensive_head = FC_head(num_classes=2, hidden_dim=64, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
+        self.engagement_head = FC_head(num_classes=5, hidden_dim=128, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
         self.offensive_levels_head = FC_head(num_classes=3, hidden_dim=128, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
         self.sentiment_head = FC_head(num_classes=5, hidden_dim=128, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
     
-        self.criterion_offensive = nn.CrossEntropyLoss()
+        self.criterion_engagement = nn.CrossEntropyLoss()
         self.criterion_offensive_level = nn.CrossEntropyLoss()
         self.criterion_sentiment = nn.CrossEntropyLoss()
         
@@ -146,11 +146,11 @@ class Multimodal_LLM(nn.Module):
         outputs = {}
         flag=False
                 
-        if self.config.offensive_bool:
-            offensive_logits = self.offensive_head(llm_outputs)
-            outputs["offensive"] = offensive_logits
+        if self.config.engagement_bool:
+            engagement_logits = self.engagement_head(llm_outputs)
+            outputs["engagement"] = engagement_logits
             if not flag:
-                outputs["loss"] = self.criterion_offensive(offensive_logits, inputs["offensive"])
+                outputs["loss"] = self.criterion_engagement(engagement_logits, inputs["engagement"])
                 flag=True
                 
         if self.config.offensive_level_bool:

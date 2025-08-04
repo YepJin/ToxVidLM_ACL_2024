@@ -149,7 +149,7 @@ def prepare_batch(batch, tokenizer):
     token_type_ids = torch.ones_like(tokenized_text.input_ids)
     
     new_batch = {  
-        'offensive': batch['offensive'],
+        'engagement': batch['engagement'],
         'offensive_level': batch['offensive_level'],
         'sentiment': batch['sentiment'],
         'video': batch['video'],

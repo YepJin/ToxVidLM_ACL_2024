@@ -33,7 +33,7 @@ parser = argparse.ArgumentParser(description='Train TikTok sentiment analysis mo
 parser.add_argument('--rd_state', type=int, default=123, help='Random state for train/test split (default: 123)')
 args = parser.parse_args()
 
-tasks_bool = {"offensive" : False, "offensive_level": False, "sentiment" : True}
+tasks_bool = {"engagement" : True, "offensive_level": False, "sentiment" : False}
 tasks = []
 name = "gpt2_vidmae_whisper_"
 
@@ -53,7 +53,7 @@ config = Namespace(
     device=torch.device("cuda:0"),
     tokenizer_path="ckpts",
     tasks = tasks,
-    offensive_bool = tasks_bool["offensive"],
+    engagement_bool = tasks_bool["engagement"],
     offensive_level_bool = tasks_bool["offensive_level"],
     sentiment_bool = tasks_bool["sentiment"],
     video_encoder="MCG-NJU/videomae-base",
@@ -90,24 +90,20 @@ config = Namespace(
 )
 
 
-df = pd.read_csv("tiktok_data/video_rating.csv")
+df = pd.read_csv("video_rating.csv")
 #df=df.head(100)
 df_train_val, df_test = train_test_split(df, test_size=(2/3), random_state=rd_state)
 df_train, df_val = train_test_split(df_train_val, test_size=(2/3), random_state=rd_state)
 
-num_epochs = 3
+num_epochs = 2
 patience = 10
 batch_size = 4
 
 #for roberta
-tokenizer = XLMRobertaTokenizerFast.from_pretrained("l3cube-pune/hing-roberta")
-model = XLMRobertaModel.from_pretrained("l3cube-pune/hing-roberta", torch_dtype=torch.float32)
+tokenizer = XLMRobertaTokenizerFast.from_pretrained("roberta-base")
+model = XLMRobertaModel.from_pretrained("roberta-base", torch_dtype=torch.float32)
 
-#for gpt2
-# tokenizer = PreTrainedTokenizerFast.from_pretrained('l3cube-pune/hing-gpt')
-# model = GPT2Model.from_pretrained('l3cube-pune/hing-gpt', torch_dtype=torch.float32)
-# tokenizer.bos_token_id = 1
-# tokenizer.eos_token_id = 2
+
 
 
 model = Multimodal_LLM(batch_size=batch_size, config=config, tokenizer=tokenizer, adapter_llm=model)
@@ -124,4 +120,4 @@ val_dataloader = DataLoader(val_ds, batch_size=batch_size, num_workers=8)
 test_dataloader = DataLoader(test_ds, batch_size=batch_size, num_workers=8)
 
 
-train_model(model, train_dataloader, val_dataloader, config, num_epochs, "sentiment", "f1", devices=None)
+train_model(model, train_dataloader, val_dataloader, config, num_epochs, "engagement", "f1", devices=None)

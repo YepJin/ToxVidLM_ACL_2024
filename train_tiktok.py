@@ -29,24 +29,20 @@ import os
 import argparse
 
 # Add command line argument parsing
-parser = argparse.ArgumentParser(description='Train TikTok sentiment analysis model')
-parser.add_argument('--rd_state', type=int, default=123, help='Random state for train/test split (default: 123)')
-args = parser.parse_args()
 
-tasks_bool = {"engagement" : False, "offensive_level": False, "sentiment" : True}
+
+tasks_bool = {"engagement" : False, "offensive_level": False, "authenticity" : True}
 tasks = []
-name = "gpt2_vidmae_whisper_"
+name = "video_rating_"
 
-rd_state = args.rd_state
-print(f"Using random state: {rd_state}")
+
 
 for k, v in tasks_bool.items():
     if tasks_bool[k]:
         tasks.append(k)
         name += k + "_"
 
-# Add random state to filename to distinguish different splits
-name += f"rd{rd_state}_"
+
         
 config = Namespace(
     file_name=name + "0",
@@ -55,7 +51,7 @@ config = Namespace(
     tasks = tasks,
     engagement_bool = tasks_bool["engagement"],
     offensive_level_bool = tasks_bool["offensive_level"],
-    sentiment_bool = tasks_bool["sentiment"],
+    authenticity_bool = tasks_bool["authenticity"],
     video_encoder="MCG-NJU/videomae-base",
     audio_encoder="openai/whisper-small",
     lstm_or_conv = False,
@@ -91,13 +87,12 @@ config = Namespace(
 
 
 df = pd.read_csv("video_rating.csv")
-#df=df.head(100)
-df_train_val, df_test = train_test_split(df, test_size=(2/3), random_state=rd_state)
-df_train, df_val = train_test_split(df_train_val, test_size=(2/3), random_state=rd_state)
+
+
 
 num_epochs = 4
 patience = 10
-batch_size = 4
+batch_size = 6
 
 #for roberta
 tokenizer = XLMRobertaTokenizerFast.from_pretrained("roberta-base")
@@ -109,15 +104,19 @@ model = XLMRobertaModel.from_pretrained("roberta-base", torch_dtype=torch.float3
 model = Multimodal_LLM(batch_size=batch_size, config=config, tokenizer=tokenizer, adapter_llm=model)
 
 
+for rd_state in [0,2,18]:
+    config.file_name = name + "_"+str(rd_state)
+    df_train_val, df_test = train_test_split(df, test_size=(2/3), random_state=rd_state)
+    df_train, df_val = train_test_split(df_train_val, test_size=(2/3), random_state=rd_state)
 
 
-train_ds = CustomDataset(dataframe=df_train, train=True, tokenizer=tokenizer)
-val_ds = CustomDataset(df_val, train=True, tokenizer=tokenizer)
-test_ds = CustomDataset(df_test, train=False, tokenizer=tokenizer)
+    train_ds = CustomDataset(dataframe=df_train, train=True, tokenizer=tokenizer)
+    val_ds = CustomDataset(df_val, train=True, tokenizer=tokenizer)
+    test_ds = CustomDataset(df_test, train=False, tokenizer=tokenizer)
 
-train_dataloader = DataLoader(train_ds, batch_size=batch_size, num_workers=8, shuffle=True)
-val_dataloader = DataLoader(val_ds, batch_size=batch_size, num_workers=8)
-test_dataloader = DataLoader(test_ds, batch_size=batch_size, num_workers=8)
+    train_dataloader = DataLoader(train_ds, batch_size=batch_size, num_workers=8, shuffle=True)
+    val_dataloader = DataLoader(val_ds, batch_size=batch_size, num_workers=8)
+    test_dataloader = DataLoader(test_ds, batch_size=batch_size, num_workers=8)
 
 
-train_model(model, train_dataloader, val_dataloader, config, num_epochs, "sentiment", "f1", devices=None)
+    train_model(model, train_dataloader, val_dataloader, config, num_epochs, "authenticity", "f1", devices=None)

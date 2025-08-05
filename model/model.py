@@ -62,11 +62,11 @@ class Multimodal_LLM(nn.Module):
         
         self.engagement_head = FC_head(num_classes=5, hidden_dim=128, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
         self.offensive_levels_head = FC_head(num_classes=3, hidden_dim=128, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
-        self.sentiment_head = FC_head(num_classes=5, hidden_dim=128, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
+        self.authenticity_head = FC_head(num_classes=5, hidden_dim=128, llm_embed_dim=self.config.llm_output_dim, add_pooling=self.config.add_pooling)
     
         self.criterion_engagement = nn.CrossEntropyLoss()
         self.criterion_offensive_level = nn.CrossEntropyLoss()
-        self.criterion_sentiment = nn.CrossEntropyLoss()
+        self.criterion_authenticity = nn.CrossEntropyLoss()
         
     def forward(self, inputs):
         
@@ -162,13 +162,13 @@ class Multimodal_LLM(nn.Module):
             else:
                 outputs["loss"] += self.criterion_offensive_level(offensive_level_logits, inputs["offensive_level"])
                 
-        if self.config.sentiment_bool:
-            sentiment_logits = self.sentiment_head(llm_outputs)
-            outputs["sentiment"] = sentiment_logits
+        if self.config.authenticity_bool:
+            authenticity_logits = self.authenticity_head(llm_outputs)
+            outputs["authenticity"] = authenticity_logits
             if not flag:
-                outputs["loss"] = self.criterion_sentiment(sentiment_logits, inputs["sentiment"])
+                outputs["loss"] = self.criterion_authenticity(authenticity_logits, inputs["authenticity"])
                 flag=True
             else:
-                outputs["loss"] += self.criterion_sentiment(sentiment_logits, inputs["sentiment"])
+                outputs["loss"] += self.criterion_authenticity(authenticity_logits, inputs["authenticity"])
                         
         return outputs

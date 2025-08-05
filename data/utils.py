@@ -151,7 +151,7 @@ def prepare_batch(batch, tokenizer):
     new_batch = {  
         'engagement': batch['engagement'],
         'offensive_level': batch['offensive_level'],
-        'sentiment': batch['sentiment'],
+        'authenticity': batch['authenticity'],
         'video': batch['video'],
         'audio': batch['audio'],
         'input_ids': tokenized_text.input_ids.squeeze(dim=0),

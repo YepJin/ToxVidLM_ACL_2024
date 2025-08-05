@@ -1,7 +1,8 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
-import torchvision
-from torchvision import transforms
+fro        engagement_labels = torch.tensor(literal_eval(self.dataframe["engagement_one_hot"].iloc[idx]), device="cpu")
+        offensive_level_labels = torch.tensor(literal_eval(self.dataframe["offensiveness level"].iloc[idx]), device="cpu")
+        authenticity_labels = torch.tensor(literal_eval(self.dataframe["authenticity"].iloc[idx]), device="cpu")orchvision import transforms
 from PIL import Image
 import pandas as pd
 import random
